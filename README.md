@@ -1,4 +1,4 @@
-## Hi there 👋
+## Salut royaume des braves est un jeu créer par ALAV3X dont le discord est alavex__ 👋
 
 <!--
 **royaumedesbraves/royaumedesbraves** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.

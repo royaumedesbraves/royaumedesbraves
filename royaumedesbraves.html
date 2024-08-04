@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Stratégique</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('background.jpg');
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 3em;
+            margin: 20px 0;
+            color: #333;
+        }
+        .class-selection, .skill-fusion, .log, .character {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .class-option, button {
+            background-color: #26a200;
+            color: #fff;
+            padding: 10px 20px;
+            border: 1px solid black;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .class-option:hover, button:hover {
+            background-color: #0056b3;
+        }
+        #gameArea {
+            display: none;
+            justify-content: space-around;
+            width: 80%;
+        }
+        .character {
+            border: 1px solid #000;
+            padding: 10px;
+            margin: 5px;
+            background-color: #fff;
+            width: 200px;
+        }
+        .player {
+            background-color: #d0ffd0;
+        }
+        .enemy {
+            background-color: #ffd0d0;
+        }
+        .skill, .loot {
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        .skill:hover, .loot:hover {
+            text-decoration: underline;
+        }
+        .skill-fusion {
+            margin-top: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .log {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .log div {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+  	<style>
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		#cookie-container {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 350px;
+			height: 300px;
+			background-color: black;
+			color: white;
+			border: 2px solid white;
+			display: flex;
+			flex-direction: column;
+			border: 2px solid white;
+			justify-content: center;
+			align-items: center;
+			visibility: hidden;
+		}
+
+		#cookie-container.active {
+			visibility: visible;
+		}
+
+		#cookie-title {
+			font-size: 20px;
+			margin-bottom: 10px;
+		}
+
+		#cookie-terms {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			margin-bottom: 10px;
+		}
+
+		#cookie-terms input[type="checkbox"] {
+			margin-right: 5px;
+		}
+
+		#cookie-btn {
+			padding: 10px 20px;
+			background-color: white;
+			color: black;
+			border: none;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<div id="cookie-container">
+		<div id="cookie-title">Conseils de brave</div>
+		<div id="cookie-terms">
+			<label><input type="checkbox" name="cookies" value="accept"> Choisissez le Guerrier pour une progression équilibrée, le Mage pour de puissantes attaques à distance, le Voleur pour des coups rapides et l'évasion, et le Héros pour des compétences puissantes et défensives.</label>
+			<label><input type="checkbox" name="storage" value="accept"> Pour jouer,choisissez une classe, combattez des ennemis en utilisant vos compétences, gagnez de l'XP pour monter en niveau, et trouvez des équipements pour renforcer votre personnage.</label>
+		</div>
+		<button id="cookie-btn">Accepter</button>
+	</div>
+	<script>
+		window.onload = function() {
+			var cookieContainer = document.getElementById("cookie-container");
+			var cookieBtn = document.getElementById("cookie-btn");
+
+			cookieBtn.onclick = function() {
+				if (document.getElementsByName("cookies")[0].checked && document.getElementsByName("storage")[0].checked) {
+					cookieContainer.classList.remove("active");
+				}
+			}
+
+			setTimeout(function(){
+				cookieContainer.classList.add("active");
+			}, 1000);
+		}
+	</script>
+</body>
+</html>
+<body>
+    <h1>Royaume des braves</h1>
+    <div class="class-selection">
+        <h2>Choisissez votre classe</h2>
+        <div class="class-option" onclick="selectClass('Voleur')">Voleur</div>
+        <div class="class-option" onclick="selectClass('Mage')">Mage</div>
+        <div class="class-option" onclick="selectClass('Guerrier')">Guerrier</div>
+        <div class="class-option" onclick="selectClass('Héros')">Héros</div>
+        <div class="class-option" onclick="selectClass('Archer')">Archer</div>
+        <div class="class-option" onclick="selectClass('Vampire')">Vampire</div>
+    </div>
+
+    <div id="gameArea">
+        <div class="character player" id="player">
+            <h2>Joueur</h2>
+            <p>Classe: <span id="playerClass"></span></p>
+            <p>Niveau: <span id="playerLevel">1</span></p>
+            <p>XP: <span id="playerXP">0</span> / <span id="nextLevelXP">100</span></p>
+            <p>HP: <span id="playerHP">100</span></p>
+            <h3>Compétences</h3>
+            <div id="playerSkills"></div>
+            <h3>Équipements</h3>
+            <div id="playerEquipment"></div>
+        </div>
+        <div class="character enemy" id="enemy">
+            <h2 id="enemyName">Ennemi</h2>
+            <p>Niveau: <span id="enemyLevel">1</span></p>
+            <p>HP: <span id="enemyHP">50</span></p>
+        </div>
+    </div>
+    <div class="log" id="log"></div>
+    <div class="skill-fusion" id="skillFusion">
+        <h2>Fusion de Compétences</h2>
+        <select id="skill1">
+            <option value="" disabled selected>Choisir une compétence</option>
+        </select>
+        <select id="skill2">
+            <option value="" disabled selected>Choisir une compétence</option>
+        </select>
+        <button onclick="fuseSelectedSkills()">Fusionner</button>
+    </div>
+
+    <script>
+        class Character {
+            constructor(name, level, hp, skills, equipment = []) {
+                this.name = name;
+                this.level = level;
+                this.hp = hp;
+                this.skills = skills;
+                this.equipment = equipment;
+                this.xp = 0; // Expérience initiale
+                this.nextLevelXP = 100; // XP nécessaire pour le niveau suivant
+                this.isPoisoned = false;
+                this.poisonDamage = 0;
+            }
+
+            useSkill(skillIndex, target) {
+                const skill = this.skills[skillIndex];
+                let message = `${this.name} utilise ${skill.name}. `;
+                if (skill.type === 'attack') {
+                    let damage = skill.value + this.level * 2;
+                    this.equipment.forEach(item => {
+                        if (item.effect.type === 'damage') {
+                            damage += item.effect.value;
+                        }
+                    });
+                    target.hp -= damage;
+                    message += `Il inflige ${damage} dégâts à ${target.name}.`;
+                } else if (skill.type === 'heal') {
+                    this.hp += skill.value;
+                    message += `Il se soigne de ${skill.value} HP.`;
+                } else if (skill.type === 'poison') {
+                    target.isPoisoned = true;
+                    target.poisonDamage = skill.value;
+                    message += `${target.name} est empoisonné.`;
+                }
+                return message;
+            }
+
+            equip(item) {
+                this.equipment.push(item);
+                return `${this.name} équipe ${item.name}.`;
+            }
+
+            gainXP(amount) {
+                this.xp += amount;
+                if (this.xp >= this.nextLevelXP) {
+                    this.levelUp();
+                }
+            }
+
+            levelUp() {
+                this.level += 1;
+                this.hp += 20; // Augmentation de HP à chaque niveau
+                this.xp = 0;
+                this.nextLevelXP = Math.round(this.nextLevelXP * 1.5); // XP nécessaire pour le prochain niveau
+                addLog(`${this.name} monte au niveau ${this.level} ! HP augmenté à ${this.hp}.`);
+                updatePlayerDisplay();
+            }
+
+            applyPoison() {
+                if (this.isPoisoned) {
+                    this.hp -= this.poisonDamage;
+                    addLog(`${this.name} subit ${this.poisonDamage} dégâts de poison.`);
+                    if (this.hp <= 0) {
+                        addLog(`${this.name} succombe au poison.`);
+                        endGame();
+                    }
+                }
+            }
+
+            evolve() {
+                this.level += 1;
+                this.hp += 20 * this.level;
+                this.skills.forEach(skill => {
+                    skill.value += 5 * this.level;
+                });
+                addLog(`${this.name} évolue au niveau ${this.level}, devenant plus puissant !`);
+            }
+        }
+
+        class Skill {
+            constructor(name, type, value) {
+                this.name = name;
+                this.type = type; // 'attack', 'heal', 'evade', 'poison'
+                this.value = value;
+                this.penalty = null; // Désavantage ajouté à chaque fusion
+            }
+        }
+
+        class Equipment {
+            constructor(name, effect) {
+                this.name = name;
+                this.effect = effect; // {type: 'damage' | 'defense', value: number}
+            }
+        }
+
+        const playerSkills = {
+            'Voleur': [
+                new Skill('Attaque rapide', 'attack', 10),
+                new Skill('Évasion', 'evade', 0)
+            ],
+            'Mage': [
+                new Skill('Boule de feu', 'attack', 15),
+                new Skill('Soin', 'heal', 20)
+            ],
+            'Guerrier': [
+                new Skill('Attaque lourde', 'attack', 20),
+                new Skill('Bouclier magique', 'heal', 15)
+            ],
+            'Héros': [
+                new Skill('Attaque divine', 'attack', 25),
+                new Skill('Protection céleste', 'heal', 30)
+            ],
+            'Archer': [
+                new Skill('Flèche perçante', 'attack', 12),
+                new Skill('Tir rapide', 'attack', 8)
+            ],
+            'Vampire': [
+                new Skill('Morsure', 'attack', 18),
+                new Skill('Siphon de vie', 'heal', 10)
+            ]
+        };
+
+const lootTable = [
+            new Equipment('Épée en fer', { type: 'damage', value: 5 }),
+            new Equipment('Bouclier en bois', { type: 'defense', value: 5 }),
+            new Equipment('Amulette magique', { type: 'damage', value: 10 }),
+            new Equipment('Armure légère', { type: 'defense', value: 10 }),
+            new Equipment('Arc long', { type: 'damage', value: 7 }),
+            new Equipment('Cuirasse renforcée', { type: 'defense', value: 15 })
+        ];
+
+        const enemies = [
+            new Character('Gobelin', 1, 50, [new Skill('Coup de dague', 'attack', 5)]),
+            new Character('Orc', 2, 80, [new Skill('Coup de massue', 'attack', 10)]),
+            new Character('Dragon', 5, 200, [new Skill('Souffle de feu', 'attack', 25)]),
+            new Character('Squelette', 3, 70, [new Skill('Coup d\'épée', 'attack', 8)]),
+            new Character('Troll', 4, 150, [new Skill('Écrasement', 'attack', 20)])
+        ];
+
+        const bosses = [
+            new Character('Seigneur Démon', 10, 500, [new Skill('Explosion noire', 'attack', 50), new Skill('Soin sombre', 'heal', 30)]),
+            new Character('Archimage', 8, 300, [new Skill('Tempête de glace', 'attack', 40), new Skill('Bouclier magique', 'defense', 20)]),
+            new Character('Roi des morts', 9, 400, [new Skill('Onde de choc', 'attack', 45), new Skill('Invocation de squelettes', 'defense', 0)])
+        ];
+
+        let player;
+        let currentEnemy;
+
+        function selectClass(className) {
+            player = new Character('Joueur', 1, 100, playerSkills[className]);
+            document.getElementById('playerClass').innerText = className;
+            document.querySelector('.class-selection').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'flex';
+            updatePlayerDisplay();
+            spawnEnemy();
+        }
+
+        function updatePlayerDisplay() {
+            document.getElementById('playerLevel').innerText = player.level;
+            document.getElementById('playerXP').innerText = player.xp;
+            document.getElementById('nextLevelXP').innerText = player.nextLevelXP;
+            document.getElementById('playerHP').innerText = player.hp;
+            const skillsDiv = document.getElementById('playerSkills');
+            skillsDiv.innerHTML = '';
+            player.skills.forEach((skill, index) => {
+                const skillDiv = document.createElement('div');
+                skillDiv.classList.add('skill');
+                skillDiv.innerText = `${skill.name} (${skill.type} - ${skill.value})`;
+                skillDiv.onclick = () => usePlayerSkill(index);
+                skillsDiv.appendChild(skillDiv);
+            });
+            const equipmentDiv = document.getElementById('playerEquipment');
+            equipmentDiv.innerHTML = '';
+            player.equipment.forEach((item) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('loot');
+                itemDiv.innerText = `${item.name} (${item.effect.type} - ${item.effect.value})`;
+                equipmentDiv.appendChild(itemDiv);
+            });
+        }
+
+        function spawnEnemy() {
+            const enemyType = Math.random() < 0.9 ? 'enemy' : 'boss';
+            if (enemyType === 'enemy') {
+                currentEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+            } else {
+                currentEnemy = bosses[Math.floor(Math.random() * bosses.length)];
+            }
+            document.getElementById('enemyName').innerText = currentEnemy.name;
+            document.getElementById('enemyLevel').innerText = currentEnemy.level;
+            document.getElementById('enemyHP').innerText = currentEnemy.hp;
+        }
+
+        function usePlayerSkill(skillIndex) {
+            const log = document.getElementById('log');
+            log.innerHTML += `<div>${player.useSkill(skillIndex, currentEnemy)}</div>`;
+            updateEnemyDisplay();
+            checkBattleOutcome();
+            enemyTurn();
+            checkBattleOutcome();
+        }
+
+        function updateEnemyDisplay() {
+            document.getElementById('enemyHP').innerText = currentEnemy.hp;
+        }
+
+        function enemyTurn() {
+            if (currentEnemy.hp > 0) {
+                const skillIndex = Math.floor(Math.random() * currentEnemy.skills.length);
+                const log = document.getElementById('log');
+                log.innerHTML += `<div>${currentEnemy.useSkill(skillIndex, player)}</div>`;
+                player.applyPoison();
+                updatePlayerDisplay();
+            }
+        }
+
+        function checkBattleOutcome() {
+            if (player.hp <= 0) {
+                endGame();
+            } else if (currentEnemy.hp <= 0) {
+                player.gainXP(currentEnemy.level * 20);
+                const loot = lootTable[Math.floor(Math.random() * lootTable.length)];
+                log.innerHTML += `<div>${player.equip(loot)}</div>`;
+                updatePlayerDisplay();
+                spawnEnemy();
+            }
+        }
+
+        function endGame() {
+            alert('Game Over');
+            location.reload();
+        }
+
+        function addLog(message) {
+            const log = document.getElementById('log');
+            log.innerHTML += `<div>${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function fuseSelectedSkills() {
+            const skill1 = document.getElementById('skill1').value;
+            const skill2 = document.getElementById('skill2').value;
+            if (skill1 && skill2 && skill1 !== skill2) {
+                const skill1Obj = player.skills.find(skill => skill.name === skill1);
+                const skill2Obj = player.skills.find(skill => skill.name === skill2);
+                if (skill1Obj && skill2Obj) {
+                    const fusedSkill = new Skill(
+                        `${skill1Obj.name} + ${skill2Obj.name}`,
+                        skill1Obj.type,
+                        skill1Obj.value + skill2Obj.value - (skill1Obj.penalty || 0) - (skill2Obj.penalty || 0)
+                    );
+                    fusedSkill.penalty = (skill1Obj.penalty || 0) + (skill2Obj.penalty || 0) + 5;
+                    player.skills.push(fusedSkill);
+                    addLog(`${player.name} a fusionné ${skill1Obj.name} et ${skill2Obj.name} en ${fusedSkill.name}.`);
+                    updatePlayerDisplay();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
